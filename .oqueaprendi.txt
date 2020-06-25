@@ -1,0 +1,999 @@
+início: 14/04
+
+O que aprendi?
+
+criar temas pro meu app (ex. caracteristicas que serão padrão, que se repetirão ao longo do aplicativo)
+https://flutter.dev/docs/cookbook/design/themes
+https://api.flutter.dev/flutter/material/ThemeData-class.html
+
+o MaterialApp possui a propriedade 'theme', widget ThemeData; primaryColor e scaffoldBackgroundColor
+é ali que vou mudar o tema do meu aplicativo
+
+resultado:
+
+class MyApp extends StatelessWidget {
+  // This widget is the root of your application.
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      theme: ThemeData(
+        primaryColor: Color(0XFF0A0E21),
+        scaffoldBackgroundColor: Color(0XFF0A0E21),
+        textTheme: TextTheme(body1: TextStyle(color: Colors.white),),
+      ),
+      home: InputPage(),
+    );
+  }
+}
+
+continuação: ela fala de controle granular, ou seja, posso modificar o tema de qualquer widget que eu quiser. como?
+
+resultado:
+
+floatingActionButton: Theme(
+        data: ThemeData(accentColor: Colors.green),
+        child: FloatingActionButton(onPressed: () {}), <<<< envolvi o FAB com o widget Theme, que possui a propriedade 'data', que recebe o widget 'ThemeData', e aqui dentro altero o FAB
+      ),
+
+
+continuação de 'o que aprendi'
+
+separar os widgets stateless e statefull em ARQUIVOS dart distintos. como? 
+colo em outro arquivo dart as classes StatefulWidget e State
+resultado:
+
+*importante: importar flutter/material.dart no novo arquivo e importar no primeiro arquivo este arquivo atual
+
+novo arquivo:
+
+import 'package:flutter/material.dart';
+
+
+class InputPage extends StatefulWidget {
+  @override
+  _InputPageState createState() => _InputPageState();
+}
+
+class _InputPageState extends State<InputPage> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Center(
+          child: Text('CALCULADORA DE IMC'),
+        ),
+      ),
+      body: Center(
+        // Center is a layout widget. It takes a single child and positions it
+        // in the middle of the parent.
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text(
+              'Body Text',
+            ),
+            Text(''),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+arquivo original:
+
+import 'input_page.dart';
+
+
+continuação de 'o que aprendi'
+
+***como montar 1 layout com 3 linhas, 2 containers + 1 container + 2 containers em 10 minutos:
+
+resultado:
+
+
+Column(
+        children: <Widget>[
+          Expanded(
+            child: Row(
+              children: <Widget>[
+                Expanded(
+                  child: Container(
+                    margin: EdgeInsets.all(15),
+                    decoration: BoxDecoration( color: Color(0XFF1D1E33), borderRadius: BorderRadius.circular(10),),
+                  ),
+                ),
+                Expanded(
+                  child: Container(
+                    margin: EdgeInsets.all(15),
+                    decoration: BoxDecoration( color: Color(0XFF1D1E33), borderRadius: BorderRadius.circular(10),),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: Row(
+              children: <Widget>[
+                Expanded(
+                  child: Container(
+                    margin: EdgeInsets.all(15),
+                    decoration: BoxDecoration( color: Color(0XFF1D1E33), borderRadius: BorderRadius.circular(10),),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: Row(
+              children: <Widget>[
+                Expanded(
+                  child: Container(
+                    margin: EdgeInsets.all(15),
+                    decoration: BoxDecoration( color: Color(0XFF1D1E33), borderRadius: BorderRadius.circular(10),),
+                  ),
+                ),
+                Expanded(
+                  child: Container(
+                    margin: EdgeInsets.all(15),
+                    decoration: BoxDecoration( color: Color(0XFF1D1E33), borderRadius: BorderRadius.circular(10),),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      )
+
+3 linhas, cada uma dentro do seu respectivo Expanded;
+linhas 1 e 3 com 2 containers, cada container dentro do seu respectivo Expanded
+linha 2 com 1 container, tambem dentro do Expanded
+
+Column
+  Expanded
+    Row
+      Expanded
+        Container
+      Expanded
+        Container
+  Expanded
+    Row
+      Expanded
+        Container
+  Expanded
+    Row
+      Expanded
+        Container
+      Expanded
+        Container
+
+
+A partir desses momento ela ensina como extrair o widget que se repete. nesse caso, os widgets que se repetem sao o container,
+que é identico;
+
+como extract widgets que se repetem muito para diminuir linhas de codigo:
+
+
+DRY: do not repeat yourself
+
+no caso, queremos extrair o container, que é identico em todas as linhas. entao eu vou no Flutter Inspector (aba do lado direito),
+clico com o botao direito em cima do container, e vou em 'extract widget'. 
+No meu caso nao funcionou, entao eu seleciono o widget no proprio codigo, cuidando pra nao pegar ) que nao pertença a ele,
+clico com o botao direito, refactor, extract, extract flutter widget
+
+agora que extrai o widget-padrao, vou modifica-lo, para poder passar argumentos para ele, a fim de poder alterar as caracteristicas
+que eu quiser, afinal, não quero algo totalmente estático, impossivel de ser alterado. nesse aplicativo, quero mudar a cor o container
+quando ele for clicado, e quero tambem inserir conteudo customizado. 
+
+para isso, vamos criar um construtor 
+
+custom widget com o construtor ficou assim:
+
+
+
+class ReusableCard extends StatelessWidget {
+
+  ReusableCard({ @required this.colour}); <<<<< construtor; recebeu o @required porque eu quero que a cor seja obrigatoria; nao tem como ter um ReusableCard com a cor 'null'
+
+ final Color colour; <<< propriedade Color recebe o nome que passei o this.NOME
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: EdgeInsets.all(15),
+      decoration: BoxDecoration(
+        color: colour, 				<<< nome entra aqui
+        borderRadius: BorderRadius.circular(10),),
+    );
+  }
+}
+
+e a maneira de passar o argumento pro widget em uso é:
+
+ReusableCard(colour: Color(0XFF1D1E33),),
+
+e agora, para poder inserir conteudo customizado, vou inserir no construtor um Widget, na propriedade child
+
+resultado:
+
+class ReusableCard extends StatelessWidget {
+
+  ReusableCard({ @required this.colour, this.cardChild}); <<<<<<
+
+  final Color colour;
+  final Widget cardChild; <<<<<< ATENCAO! a propriedade é WIDGET
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      child: cardChild, <<<<<<<<<<<<<<<<<
+      margin: EdgeInsets.all(15),
+      decoration: BoxDecoration(
+        color: colour,
+        borderRadius: BorderRadius.circular(10),),
+    );
+  }
+}
+
+
+quando eu for criar um construtor, preciso passar o tipo certo de dado (final Color ou final InconData);
+para descobrir qual o tipo de dado, eu clico no widget que sera construido (ex. icone) e aperto ctrl + q, e
+ao lado do icon, por exemplo, aparece que ele é do tipo IconData
+no caso do text, o tipo é String, e nao Text
+
+
+
+aprendi a colocar width infinito na barra inferior
+
+width: double.infinity,
+
+aprendi a substituir os valores (cor, altura etc) pelo nome das variaveis, e aí altero so 1 vez onde criei a variavel,
+e a alteracao é replicada para todos os lugares onde ela aparece
+
+exemplo:
+
+criação das variaveis:
+
+class InputPage extends StatefulWidget {
+  @override
+  _InputPageState createState() => _InputPageState();
+}
+
+const bottomContainerHeight = 80.0; <<<< mudo so aqui
+const activeCardColor = 0XFF1D1E33;  <<<< mudo so aqui
+
+uso das variaveis:
+
+Expanded(
+        child: ReusableCard(colour: Color(activeCardColor),), <<<<<< aqui
+
+
+E
+
+
+
+Container(
+            color: Color(0XFFEB1555),
+            margin: EdgeInsets.only(top: 10),
+            width: double.infinity,
+            height: bottomContainerHeight, <<<<<< aqui
+
+
+aprendi a criar novos arquivos .dart para os reusable widgets, no caso, ReusableCard.dart e ReusableCardContent.dart
+importei ambos para o input_page, e importei material.dart nos dois .dart acima
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ATÉ AQUI EM 14/04 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+16/04:
+
+iniciar aula 135
+
+fazer que os cartoes sejam interativos (detectar toque etc)
+
+1o modo: envolver o ReusableCard num FlatButton; o problema é que o FlatButton modifica a aparencia doa widgets que ele envolve
+
+2o GestureDetector class: é capaz de detectar taps, long press, drag etc nao implementa nenhuma modificacao no widget envolvido
+por ele
+
+quando o ReusableCard for clicado, quero mudar a cor dele, para indicar que ele foi clicado
+pra isso vou usar o setState() pra mudar a propriedade color
+
+passo a passo:
+
+1 - envolver ReusableCard com o GestureDetector e informar propriedade onTap
+2 - "ligar" o onTap informando um print('') e ver se aparece no console
+3 - fazer que a cor do ReusableCard mude quando ele for clicado
+4 - criar as variaveis const activeCardColor e const inactiveCardColor, que devem receber as respectivas cores, conforme o estado
+5 - logo abaixo da linha            class _InputPageState extends State<InputPage>           vou criar a logica que fará as cores mudarem conforme o onTap;
+   crio essas variaveis aqui, detro do State, pq as cores precisam mudar
+6 - crio as variaveis maleCardColor e femaleCardColor, que receberao os valores de inactiveCardColor inicialmente
+7 - crio a função updateColor > se o genero == 1, e se maleCardColor == inactiveCardColor, entao maleCardColor == activeCardColor, senao, recebe inactiveCardColor
+8 - fazer o mesmo se o genero == 2 (na verdade é so o else o gender == 1);
+9 - chamar a funcao updateColor no setState de ambos os Cards, passando 1 no Card Male, e 2 no Card Female
+10 - colour dos cards masc e fem serao maleCardColor e femaleCardColor respectivamente
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ATÉ AQUI EM 16/04 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+21/04:
+
+aula 136 
+
+ENUMS !!!!
+
+o modo como o codigo está até aqui: estamos passando um inteiro (1 ou 2) para representar os sexos (masculino / feminino)
+vamos mudar isso com os ENUMS e com os OPERADORES TERNÁRIOS
+
+1 e 2 não fazem muito sentido, porque sao NUMEROS, nao sao ADJETIVOS, como masculino e feminino. para mudar isso usaremos ENUMS
+significado de enums: "the action of establishing the number os something"
+
+por exemplo, se eu crio a classe CarType, sem os enums, eu digo que o tipo 1 é conversivel, tipo 2 é SUV e tipo 3 é hatch
+com os enums fica assim: CarType.convertible, CarType.SUV, CarType.hatchback
+
+tipo boolean só tem 2 estados: 0 e 1, ligado e desligado.
+e se quisessemos mais estados, como as velocidades de um liquidificador: 0, 1, 2, 3, 4?
+ENUMS!
+
+estrutura:
+
+enum EnumName {typeA, typeB, typeC}
+
+para usar:
+
+EnumName.typeA
+
+ex: CarType.convertible, CarType.SUV, CarType.hatchback
+
+
+ex:
+
+void main() {	<< main
+    
+ Car myCar = Car(carStyle: 2); << crio o objeto "myCar", tipo Car (esquerda), = classe Car, que recebe o parametro carStyle: 2, SUV
+  
+}
+
+
+class Car {	<< classe Car
+  
+  //REMEMBER 1 = hatchback, 2 = SUV...
+  int carStyle; << crio a propriedade "carStyle" do tipo inteiro! nao faz muito sentido
+  
+  Car({this.carStyle}); << construtor (nome da classe ({this.ALGUMNOME})
+  
+}
+
+1.classe Car
+2.crio a propriedade "carStyle" do tipo inteiro! nao faz muito sentido
+3.construtor (nome da classe ({this.ALGUMNOME})
+4.crio o objeto "myCar", tipo Car (esquerda), = classe Car, que recebe o parametro carStyle: 2, SUV
+
+#############
+
+*************************com os ENUMS eu mudo o tipo da propriedade carStyle, de inteiro para ENUM
+
+fica assim:
+
+
+void main() {
+    
+ Car myCar = Car(carStyle: CarType.hatchback);
+  
+}
+
+
+class Car {
+  
+  CarType carStyle; <<< o ENUM entra aqui no lugar do int;
+  
+  Car({this.carStyle});
+  
+}
+
+enum CarType{
+  hatchback,
+  SUV,
+  convertible,
+  coupe
+}
+
+
+ENUMS so podem ser criados fora de classes
+
+
+##############
+
+OPERADORES TERNARIOS
+
+como é a estrutura do "if"?
+
+if (condition is true) {DoThisIfTrue}
+  else {DoThisIfFalse}
+
+exemplo:
+
+void main() {
+    
+ bool Condition = true;
+  
+  if (Condition == true){
+    print('Great!');
+  }else{
+    print('Oh no!');
+  }
+  
+}
+
+resultado: Great!
+
+
+como é o operador ternário?
+
+Condition ? DoThisIfTrue : DoThisIfFalse
+
+exemplo:
+
+void main() {
+    
+ bool Condition = false;
+  
+  Condition ? print('Great!') : print('Oh no!'); << 5 linhas viram 1 linha!
+  
+}
+
+operador ternario só funciona quando resposta é de apenas 1 comando
+
+outro exemplo:
+
+void main() {
+    
+ int myAge = 34;
+  
+  bool canBuyAlcohol = myAge > 17 ? true : false;
+  
+  print(canBuyAlcohol);
+  
+}
+
+########
+
+Alteração o IMC_treino, substituição da funcao updateColor pelo operador ternário:
+
+1.comentar/inutilizar a funcao updateColor e as variaveis maleCardColor e femaleCardColor
+2.criação da variável do tipo Gender (enum), com o nome selectedGender > Gender selectedGender
+3.alteração do setState > apaga updateColor e escreve selectedGender = Gender.male;
+4.alteração da função na linha da cor > colour: selectedGender == Gender.male ? activeCardColor : inactiveCardColor,
+
+resumo:
+
+Gender selectedGender; << criação da variável do tipo Gender (enum)
+
+
+
+setState(() {
+             selectedGender = Gender.male;
+            });
+
+
+colour: selectedGender == Gender.male ? activeCardColor : inactiveCardColor
+
+
+codigo deletado por causa do operador ternario:
+
+//  Color maleCardColor = inactiveCardColor;
+//  Color femaleCardColor = inactiveCardColor;
+
+
+//  void updateColor(Gender selectedGender){ //Gender é o nome do enum; selectedGender é o parametro passado na função updateColor, é o sexo escolhido
+//    //male card pressed
+//    if(selectedGender == Gender.male){
+//      if(maleCardColor == inactiveCardColor){
+//        maleCardColor = activeCardColor;
+//        femaleCardColor = inactiveCardColor;
+//      }else{
+//        maleCardColor = inactiveCardColor;
+//      }
+//    //female card pressed
+//    }else{
+//      if(femaleCardColor == inactiveCardColor){
+//        femaleCardColor = activeCardColor;
+//        maleCardColor = inactiveCardColor;
+//      }else{
+//        femaleCardColor = inactiveCardColor;
+//      }
+//    }
+//  }
+
+#############
+
+aula 138:
+
+em dart as funcoes sao First Class Objects, ou seja, elas tem um tipo, e por isso podem ser passadas como qualquer outro tipo, como uma String ou um inteiro
+as funcoes tambem podem ser usadas como o valor de uma variavel ou de uma constante
+
+exemplo:
+
+1.criar fora do main 2 funcoes, uma de soma e outra de multiplicação
+
+int add(int n1, int n2){
+  return n1 + n2;
+}
+
+int multiply(int n1, int n2){
+  return n1 * n2;
+}
+
+2.chamar no main as funcoes, armazenar o resultado numa variavel, e imprimi-lo
+
+void main() {
+    
+ int result1 = add(3,5);
+  print(result1); << imprime 8
+  
+  int result2 = multiply(3,5);
+  print(result2); << imprime 15
+  
+}
+
+3. criar a funcao calculator, que receberá como argumento as funcoes add e multiply
+
+void main() {
+    
+ int result1 = calculator(2, 8, add); << chamamento da funcao calculator
+  print(result1);
+  
+  int result2 = calculator(5, 8, multiply); << chamamento da funcao calculator
+  print(result2);
+  
+}
+
+int calculator(int n1, int n2, Function calculation){ << função calculator, que recebe os argumentos n1, n2 e calculation
+  return calculation(n1, n2);
+}
+
+
+int add(int n1, int n2){
+  return n1 + n2;
+}
+
+int multiply(int n1, int n2){
+  return n1 * n2;
+}
+
+4. fazer uma variavel receber a função > variavel = funcao
+
+void main() {
+    
+ int result1 = calculator(2, 8, add);
+  print(result1);
+  
+  int result2 = calculator(5, 8, multiply);
+  print(result2);
+  
+}
+
+Function calculator = (int n1, int n2, Function calculation){ << substitui o int pelo Function, e a função esta armazenada dentro da agora variavel calculator
+  return calculation(n1, n2);
+};				 << inseri aqui o " ; " porque calculator virou do tipo Function 
+
+
+int add(int n1, int n2){
+  return n1 + n2;
+}
+
+int multiply(int n1, int n2){
+  return n1 * n2;
+}
+
+
+até o momento as funcoes foram criadas fora de qualquer classe, até mesmo fora do objeto main.
+Agora veremos como criar essas funcoes dentro de uma classe:
+
+
+
+1.criar classe Car com a propriedade que é uma função, e que tem o nome drive
+
+void main() {  
+}
+
+
+class Car {
+  
+  Function drive; << essa função não foi inicializada
+  
+}
+
+2.essa função será inicializada quando o objeto myCar, p. ex., for construido, entao vou criar um construtor, e quando a funcao for chamada
+
+void main() {  
+}
+
+
+class Car {
+  
+  Car({this.drive}); << quando eu construir o objeto da class Car, preciso fornecer o método drive, para associa-lo com o objeto Car
+  
+  Function drive;
+  
+}
+
+3.crio dois modos de direção, devagar e super rapido; sao funcoes fora de qualquer classe ou objeto (top level functions)
+
+void main() {  
+}
+
+
+class Car {
+  
+  Car({this.drive});
+  
+  Function drive;
+  
+}
+
+void slowDrive(){ <<<<<<<<<<<<<<<<<<<<<<<<<<<<
+  print('driving slowly');
+}
+
+void fastDrive(){ <<<<<<<<<<<<<<<<<<<<<<<<<<<<
+  print('driving super fast!');
+}
+
+4.crio o objeto myCar e passo uma funcao como argumento, porque é isso o que ele está esperando, porque é isso que foi informado no construtor:
+
+construtor:
+
+Car({this.drive});
+  
+  Function drive;
+
+
+criação do objeto myCar:
+
+void main() {
+  
+  Car myCar = Car(drive: slowDrive); << objeto myCar, do tipo Car, da classe Car, foi criado; sua propriedade, drive, recebeu a função slowDrive como argumento, sem ()
+  
+}
+
+
+class Car {
+  
+  Car({this.drive});
+  
+  Function drive;
+  
+}
+
+void slowDrive(){
+  print('driving slowly');
+}
+
+void fastDrive(){
+  print('driving super fast!');
+}
+
+5.se eu imprimir myCar.drive, ele apenas apontará para o nome da função
+
+void main() {
+  
+  Car myCar = Car(drive: slowDrive);
+  print(myCar.drive);
+  
+}
+
+console:
+
+Closure 'slowDrive'
+
+
+
+6.chamar a funcao slowDrive com o (), que é o que de fato a inicializará
+
+void main() {
+  
+  Car myCar = Car(drive: slowDrive);
+  
+  myCar.drive(); <<<<<<<<<<<<<<<<<<<
+  
+}
+
+console: 
+
+driving slowly
+
+
+
+7.passar outra função para a propriedade drive:
+
+Car myCar = Car(drive: slowDrive);
+  
+ // myCar.drive();
+  
+  myCar.drive = fastDrive; 		<< novamente sem ()
+  
+  myCar.drive(); 			<< com ()
+}
+
+
+
+Quando eu for passar uma função como argumento, passo apenas o nome dela, sem ()
+Quando eu quiser chamar o metodo e quiser disparar a funcionalidade, entao usarei o ()
+
+#####
+
+Agora vou alterar o ReusableCard para passar o GestureDetector + funcao onTap como argumento:
+
+1.remover o widget GestureDetector do input_pagee.dart e inseri-lo novamente no ReusableCard, envolvendo o Container que tem as propriedades cardChild e colour:
+
+class ReusableCard extends StatelessWidget {
+  ReusableCard({@required this.colour, this.cardChild, this.onPress}); <<<<<<< inclusao do this.onPress
+
+  final Color colour;
+  final Widget cardChild;
+  final Function onPress; 	<<<<<<< inclusao do onPress
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onPress,	<<<<<<< inclusao do onPress
+      child: Container(
+        child: cardChild,
+        margin: EdgeInsets.all(15),
+        decoration: BoxDecoration(
+          color: colour,
+          borderRadius: BorderRadius.circular(10),
+        ),
+      ),
+    );
+
+2.passar o onPress no input_page
+
+Expanded(
+          child: ReusableCard(
+                 onPress: (){ 		<<<< inclusao do onPress: (){ setState(() { selectedGender = Gender.male }) }
+                   setState(() {
+                     selectedGender = Gender.male;
+                    });
+                   },
+
+
+############
+
+aula 139:
+
+criar um arquivo dedicado para as variaveis, para usá-las em todo o app, ao inves de repetir o style: TextStyle, e ao inves de acessar
+um arquivo .dart que nao o arquivo dedicado para as variaveis, para utilizar tais variaveis:
+
+1.criar na lib o arquivo constants.dart > import 'package:flutter/material.dart';
+2.mover para esse arquivo as constantes dos outros arquivos e importar o constants.dart nos arquivos dos quais as constantes foram removidas > import 'constants.dart';
+3.mudar nome das constantes > inserir 'k' na frente da primeira letra e alterar (a agora segunda letra que antes era a primeira letra) em maiuscula > 
+  clicar com o botao direito sobre o nome de cada constante > clicar em 'refactor' > clicar em 'rename'; desse modo o software vai alterar o nome em cada lugar em que a constante é utilizada
+  ao usar essa convencao de k + Letra Maiuscula, o software mostra uma lista de todas as kConstantes que eu criei, e outras kConstantes-padrao que ele disponibiliza
+
+
+
+
+preencher o Card do meio:
+  inserir texto para o titulo 'height', texto para o valor da altura selecionada e inserir o Slider (bolinha seletora da altura)
+
+
+1.inserir a propriedade cardChild > inserir coluna > inserir os children > 
+  > Text('HEIGHT') > para que ele tenha o mesmo estilo que os outros textos ('MALE' e 'FEMALE'), inserir style: kLabelTextStyle > Text('HEIGHT', style: kLabelTextStyle,),
+  1.1 problema: container ficou do tamanho do seu child (Text) (cardChild está dentro de um Container); para resolver basta inserir na coluna principal, que é o argumento do body do Scaffold, crossAxisAlignment = c...stretch
+  > Row, que ira mostrar (display) o valor da altura e o termo 'cm'
+    Text('180', style: TextStyle(fontSize: 50.0, fontWeight: FontWeight.w900,),)
+  1.2 transformar esse estilo numa kConstante que será usada nos outros cards e inseri-lo como argumento do style > style: kNumberTextStyle
+    Text('cm', style: kLabelTextStyle)
+
+2.alinhar textos no centro da coluna > na coluna MainAxisAlignment.center > na linha mainAxisAlignment: MainAxisAlignment.center
+3.alinhar 'cm' na mesma baseline que o numero > na Row inserir CrossAxisAlignment.baseline,
+  problema: o app cai, e a razão aparece na mensagem de erro > 'se formos usar baseline, temos que usar a PROPRIEDADE textbaseline
+  copiar e colar a mensagem de erro no google 'CrossAxisAligment != CrossAxisAligment.baseline || textbaseline != null': is not true
+  no github,o respositorio Flutter, na aba issues, dá a resposta: 'you have to specify the textBaseline argument if you specify baseline alignment, so that we know which baseline to align against'
+  entao, alem de inserir CrossAxisAlignment.baseline na Row, inseri textBaseline: TextBaseline.alphabetic. para saber como preencher essa nova propriedade devo apertar CTRL + Q na ROW, e nao na propriedade
+4.inserir o Slider apos o fim da Row, dentro da Coluna
+  4.1 criar o valor que o Slider irá mostrar, e esse será mostrado na widget Text que contém o número (atualmente é '180' cm); para fazer essa ligação usarei uma variável criada abaixo da variavel Gender, int height = 180. essa variavel nao pode ser const nem final, porque será alterada o tempo inteiro
+  substituir o texto '180' pela variavel height; como a variavel height, do tipo int, estará dentro de um widget Text(), é preciso usar a funcao .toString() junto da variavel height > height.toString()
+  inserir a propriedade value no Slider; value receberá a variavel height. Value so recebe double, e height é int, entao vou usar novamente height.toDouble() > value: height.toDouble()
+  definir valores minimo e maximo > propriedades min: max: > min: 120.0, max: 220.0,   > esses valores podem ser transportados para o arquivo constants
+  definir a propriedade onChanged() > olhar na documentacao da classe como implementar; ela espera um double newValue; esse valor double é o que nos será passado pelo Slider, quando este for arrastado pelo usuario; dentro dos {} do onChanged, informar print(newValue) para testar se a funcao está ligada. Depois, dois passos pra frente, eu ligarei o setState
+  adicionar activeColor e inactiveColor para que o Slider apareça
+  fazer com que a bola do Slider se mova usando o setState dentro do onChanged > setState(() { height = newValue; });
+  problema: height é do tipo int e newValue é do tipo double, entao usar a funcao .toInt() no newValue > setState(() { height = newValue.toInt(); });
+  OBS: ELA USOU newValue.round() ao inves de newValue.toInt(); o resultado visual neste app é o mesmo. 
+  
+
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+aula 140:
+
+o objetivo dessa aula é mostrar que sempre é possivel customizar o widget com o ThemeALGUMACOISA ou, no caso, Slider, com o SliderTheme
+no fim da aula terei alterado a cor do track tanto ativo como inativo, e terei alterado a cor da bola, e tamanho dela, e o tamanho da sombra que aparece quando eu clico para arrasta-la
+
+1.a cor da track do modelo é branca, e a do app, por enquanto, é vermelha. eu posso alterar a cor da track pela propriedade activeColor: Colors.white, mas aí a cor da bola (thumb) tambem fica branca. o thumb do modelo tb é bem maior que o do app; 
+  solução: a classe Slider tem determinadas propriedades, mas nenhuma delas permite alterar a cor nem o tamanho do thumb. a solução é usar o widget SliderTheme wrapping o widget Slider. ela ja havia explicado isso no inicio das explicacoes sobre Theme. É possivel dar um tema especifico para cada widget que eu quiser
+
+  o SliderTheme pede a propriedade data, que recebe o widget SliderThemeData, que espera uns 20 valores para poder funcionar. Mas eu quero apenas alguns deles para customizar meu thumb. Como fazer?
+  solução: SliderTheme(
+		data: SliderTheme.of(context).copyWith(
+		<<<<<<<<<<< aqui dentro vou alterar as propriedades que desejo customizar; apertar CTRL + Q sobre o SliderTheme para ver quais propriedades posso alterar
+  inserir thumbColor: Color(0XFFEB1555), thumbShape: RoundSliderThumbShape(enabledThumbRadius: 15.0), overlayShape: RoundSliderOverlayShape(overlayRadius: 30.0),
+  apagar activeColor do Slider e inserir activeTrackColor: Colors.white no SliderTheme.of(context).copyWith(
+  inserir overlayColor com um pouco de transparência > é a cor da sombra que faz ao redor do thumb, quando ele é arrastado. a overlayShape tem 30.0 de radius. é a cor dela que vou alterar. Preciso colocar transparencia no 0XFF, pq se ficar 0XFF, a overlayColor vai tampar toda a thumb. Como descobrir quando de opacidade tem
+  a sombra natural, sem ter cor? seguro a tecla CTRL e clico com o mouse sobre o SliderTheme. procuro pela propriedade overlayColor, esta por sua vez terá a propriedade overlayAlpha. procuro no ctrl + F por overlayAlpha, e encontro o valor 0X1f, que é a quantidade de opacidade original, antes de mudar a cor da overlay. basta inserir esse valor no overlayColor desta maneira > overlayColor: Color(0X1fEB1555)
+
+assisti até aula 140 em 21/04
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@  
+
+aula 141 em 27/04:
+
+O objetivo dessa aula é ir ainda mais fundo, além do ThemeData. Ela ensina nesta aula que posso construir meu widget do zero.
+ela começa explicando que posso customizar ainda mais meu widget, indo alem das propriedades pre-definidas, ao customizar o ThemeData de cada widget. mas aí ela
+fala que posso ir ainda mais fundo, que posso desenhar meu widget DO ZERO, usando como se fossem os atomos dos widgets. É como se os widgets fossem as celulas,
+o ThemeData fosse os componentes das celulas, e um nivel mais fundo seriam os átomos. Sao esses atomos, que foram usados para criar os diversos widgets usados em
+flutter, que posso usar para construir os meus proprios widgets.
+
+Exemplo:
+
+um Container é composto de outros 5 widgets: limitedBox, ConstrainedBox, Align, Padding, DecoratedBox. A junção deles resulta no Container.
+
+DIY: Do It Yourself
+
+preencher os Containers de baixo, com o peso e idade:
+
+1.inserir a propriedade cardChild dentro do ReusableCard, apos a propriedade colour
+2.inserir uma Column no cardChild, MainAxisAlignment.center
+3.children da coluna: 2 textos
+  3.1.o primeiro texto, 'weight', é estilizado com a constante kLabelTextStyle na propriedade style
+  3.2.o segundo texto, que é o valor, é uma variavel. entao eu crio uma variavel dentro do class _InputPageState extends State<InputPage> {
+  int weight = 60;
+  como a variavel e um inteiro num widget que espera um texto, uso a funcao .toString() apos a variavel > weight.toString()
+
+criação dos botoes de - e +:
+ao inves de usar botoes prontos, vou cria-los a partir do quase zero
+nao usarei 2 FAB, porque a documentacao dele diz que é recomendado usar apenas 01 FAB por pagina
+
+#####################
+
+para entrar na documentacao do FAB, eu o chamo (escrevo), seguro CTRL e clico nele; vai abrir o arquivo mostrando a construção dele, seus componentes, FloatingActinoButton.dart
+procuro Widget result = RawMaterialButton()
+seguro CTRL e clico no RawMaterialButton; abre button.dart
+
+#####################
+
+vou construir o botao usando RawMaterialButton():
+
+1.apos a ultima } do input_page.dart insiro um novo widget stateless
+2.nome da classe será RoundIconButton
+3.essa classe irá retornar um RawMaterialButton. quando eu coloco o cursor sobre o RawMaterialButton e clico CTRL + Q, aparecem todas as propriedades que posso inserir na minha classe
+4.uso a propriedade shape; aperto sobre o shape o CTRL + Q, e vejo que a propriedade espera a classe ShapeBorder. pesquiso sobre essa classe e no endereço https://api.flutter.dev/flutter/painting/ShapeBorder-class.html
+aparece que ela espera um CircleBorder ou RoundedRectangleBorder, entre outros.
+5.inserir na propriedade shape o widget CircleBorder(), conforme documentacao da respectiva classe
+6.inserir tambem, alem do shape, o fillColor.
+7.para aumentar o tamanho do botao, ir na documentacao do FAB e procurar pelo RawMaterialButton. dentro dele encontro constraints, e pesquiso o valor _sizeConstraints. encontro:
+
+const BoxConstraints _kSizeConstraints = BoxConstraints.tightFor(
+  width: 56.0,
+  height: 56.0,
+)
+
+8.inseiro no meu botao a propriedade constraints e insiro o BoxConstraints.tightFor( width: 56.0, height: 56.0,)
+9.inserir elevation:6.0 e onPressed no RoundIconButton
+10.inserir child no RoundMaterialButton para poder usar icone. passar icone pelo construtor, ja que é um botao para um icone
+
+ficou assim:
+
+ RoundIconButton({this.icon});
+
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return RawMaterialButton(
+      child: Icon(icon), <<< é dentro dos parenteses que está o icon do this.icon
+
+
+
+outra opção:
+inserir child no RoundMaterialButton para poder usar icone. passar child pelo construtor
+
+ficaria assim a outra opcao:
+
+ RoundIconButton({this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return RawMaterialButton(
+      child: child,
+
+obs: ler a documentacao do RawMaterialButton para saber o que alterar, quais propriedades inserir
+
+
+11.inserir onPressed como propriedade do RoundIconButton, pelo construtor.
+Fica assim:
+
+RoundIconButton({@required this.icon, @required this.onPressed});
+
+  final IconData icon;
+  final Function onPressed;
+
+onPressed: onPressed,
+
+pra usar fica assim:
+
+RoundIconButton(
+                icon: FontAwesomeIcons.minus,
+                onPressed: () {
+                setState(() {
+                weight--;
+                });
+                },
+                ),
+
+  
+11.inserir dentro da coluna do cardChild, abaixo dos 2 Text, uma Row, e inserir o RoundIconButton como filho dela
+
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+aula 142:
+
+O objetivo desta aula é ensinar sobre como criar multiplas telas para um aplicativo
+para isso vou aprender sobre rotas
+
+1.abrir o cookbook do flutter sobre navigation, para ver como criar mapas mais simples, e mapas mais complexos
+
+2.criar nova pagina > new > dart file > import material > criar stateless widget > ResultsPage > return Scaffold > appBar > body > text
+3.no input_page, no ultimo container, inserir child, que é um Text('CALCULATE')
+4.envolver Container num GestureDetector > onTap
+5.criar a rota para a segunda tela (ResultsPage)
+6.no onTap > 
+
+onTap: (){
+                Navigator.push(context, MaterialPageRoute(builder: (context){
+                  return ResultsPage();
+                }));
+              },
+
+
+
+
+
+
+//basta inserir no onPressed o Navigator.push, e passar o context e o MaterialPageRoute, para dizer para onde queremos ir
+
+>> há 2 tipos de navegação, a mais simples e a mais complexa. a mais simples é para quando o aplicativo so tem 2 telas. a complexa é para quando tem várias telas. neste caso
+   eu uso um mapa
+
+ela ensina nesta aula como fazer um mapa, quando se tem várias telas no aplicativo
+
+conferir tutorial no flutte cookbook:
+
+https://flutter.dev/docs/cookbook/navigation
+
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+aula 143:
+
+ajustar botao de baixo (fonte e posicionamento):
+
+1.criar variavel no arquivo constants.dart com o estilo dessa fonte:
+
+
+
+
+
+
+assisti ate aula 143 em 27/04
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+28/04:
+
+aula 144
+
